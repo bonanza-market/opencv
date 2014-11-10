@@ -7,3 +7,7 @@
 .sw[a-z]
 tags
 tegra/
+.idea
+3rdparty/ippicv/unpack
+3rdparty/ippicv/downloads
+opencv.build
