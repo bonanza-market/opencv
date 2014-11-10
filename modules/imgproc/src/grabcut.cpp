@@ -529,6 +529,13 @@ void cv::grabCut( InputArray _img, InputOutputArray _mask, Rect rect,
                   InputOutputArray _bgdModel, InputOutputArray _fgdModel,
                   int iterCount, int mode )
 {
+    cv::grabCut2( _img, _mask, rect, _bgdModel, _fgdModel, iterCount, mode );
+}
+
+void cv::grabCut2( InputArray _img, InputOutputArray _mask, Rect rect,
+                   InputOutputArray _bgdModel, InputOutputArray _fgdModel,
+                   int iterCount, int mode )
+{
     Mat img = _img.getMat();
     Mat& mask = _mask.getMatRef();
     Mat& bgdModel = _bgdModel.getMatRef();

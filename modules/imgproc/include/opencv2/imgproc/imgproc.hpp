@@ -809,6 +809,10 @@ CV_EXPORTS_W void grabCut( InputArray img, InputOutputArray mask, Rect rect,
                            InputOutputArray bgdModel, InputOutputArray fgdModel,
                            int iterCount, int mode = GC_EVAL );
 
+CV_EXPORTS_W void grabCut2( InputArray img, InputOutputArray mask, Rect rect,
+                            InputOutputArray bgdModel, InputOutputArray fgdModel,
+                            int iterCount, int mode = GC_EVAL );
+
 enum
 {
     DIST_LABEL_CCOMP = 0,
