@@ -358,12 +358,19 @@ static void initMaskWithRect( Mat& mask, Size imgSize, Rect rect )
 /*
   Initialize GMM background and foreground models using kmeans algorithm.
 */
-static void initGMMs( const Mat& img, const Mat& mask, GMM& bgdGMM, GMM& fgdGMM )
+static void initGMMs( const Mat& img, const Mat& mask, GMM& bgdGMM, GMM& fgdGMM, int kMeansType,
+                      InputOutputArray _bgdInitialLabels, InputOutputArray _fgdInitialLabels )
 {
     const int kMeansItCount = 10;
-    const int kMeansType = KMEANS_PP_CENTERS;
 
     Mat bgdLabels, fgdLabels;
+
+    if ( kMeansType == KMEANS_USE_INITIAL_LABELS )
+    {
+        _bgdInitialLabels.getMat().copyTo(bgdLabels);
+        _fgdInitialLabels.getMat().copyTo(fgdLabels);
+    }
+
     vector<Vec3f> bgdSamples, fgdSamples;
     Point p;
     for( p.y = 0; p.y < img.rows; p.y++ )
@@ -379,10 +386,10 @@ static void initGMMs( const Mat& img, const Mat& mask, GMM& bgdGMM, GMM& fgdGMM 
     CV_Assert( !bgdSamples.empty() && !fgdSamples.empty() );
     Mat _bgdSamples( (int)bgdSamples.size(), 3, CV_32FC1, &bgdSamples[0][0] );
     kmeans( _bgdSamples, GMM::componentsCount, bgdLabels,
-            TermCriteria( CV_TERMCRIT_ITER, kMeansItCount, 0.0), 0, kMeansType );
+            TermCriteria( CV_TERMCRIT_ITER, kMeansItCount, 0.0), 0, kMeansType, _bgdInitialLabels );
     Mat _fgdSamples( (int)fgdSamples.size(), 3, CV_32FC1, &fgdSamples[0][0] );
     kmeans( _fgdSamples, GMM::componentsCount, fgdLabels,
-            TermCriteria( CV_TERMCRIT_ITER, kMeansItCount, 0.0), 0, kMeansType );
+            TermCriteria( CV_TERMCRIT_ITER, kMeansItCount, 0.0), 0, kMeansType, _fgdInitialLabels );
 
     bgdGMM.initLearning();
     for( int i = 0; i < (int)bgdSamples.size(); i++ )
@@ -529,12 +536,13 @@ void cv::grabCut( InputArray _img, InputOutputArray _mask, Rect rect,
                   InputOutputArray _bgdModel, InputOutputArray _fgdModel,
                   int iterCount, int mode )
 {
-    cv::grabCut2( _img, _mask, rect, _bgdModel, _fgdModel, iterCount, mode );
+    cv::grabCut2( _img, _mask, rect, _bgdModel, _fgdModel, noArray(), noArray(), iterCount, mode );
 }
 
 void cv::grabCut2( InputArray _img, InputOutputArray _mask, Rect rect,
                    InputOutputArray _bgdModel, InputOutputArray _fgdModel,
-                   int iterCount, int mode )
+                   InputOutputArray _bgdModelCenters, InputOutputArray _fgdModelCenters,
+                   int iterCount, int mode, int centersMode )
 {
     Mat img = _img.getMat();
     Mat& mask = _mask.getMatRef();
@@ -555,7 +563,10 @@ void cv::grabCut2( InputArray _img, InputOutputArray _mask, Rect rect,
             initMaskWithRect( mask, img.size(), rect );
         else // flag == GC_INIT_WITH_MASK
             checkMask( img, mask );
-        initGMMs( img, mask, bgdGMM, fgdGMM );
+
+        initGMMs( img, mask, bgdGMM, fgdGMM,
+                  centersMode == GC_CENTERS_USE_INITIAL ? KMEANS_USE_INITIAL_LABELS : KMEANS_PP_CENTERS,
+                  _bgdModelCenters, _fgdModelCenters );
     }
 
     if( iterCount <= 0)
