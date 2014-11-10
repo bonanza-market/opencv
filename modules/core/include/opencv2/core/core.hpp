@@ -2588,7 +2588,8 @@ enum
 //! clusters the input data using k-Means algorithm
 CV_EXPORTS_W double kmeans( InputArray data, int K, CV_OUT InputOutputArray bestLabels,
                             TermCriteria criteria, int attempts,
-                            int flags, OutputArray centers=noArray() );
+                            int flags, OutputArray centers=noArray(),
+                            OutputArray initialCenters=noArray() );
 
 //! returns the thread-local Random number generator
 CV_EXPORTS RNG& theRNG();
