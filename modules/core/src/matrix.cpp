@@ -2688,8 +2688,7 @@ private:
 double cv::kmeans( InputArray _data, int K,
                    InputOutputArray _bestLabels,
                    TermCriteria criteria, int attempts,
-                   int flags, OutputArray _centers,
-                   OutputArray _initialCenters )
+                   int flags, OutputArray _centers )
 {
     const int SPP_TRIALS = 3;
     Mat data0 = _data.getMat();
@@ -2782,9 +2781,6 @@ double cv::kmeans( InputArray _data, int K,
                     for( k = 0; k < K; k++ )
                         generateRandomCenter(_box, centers.ptr<float>(k), rng);
                 }
-
-                if( _initialCenters.needed() )
-                    centers.copyTo( _initialCenters );
             }
             else
             {
@@ -2792,9 +2788,6 @@ double cv::kmeans( InputArray _data, int K,
                 {
                     for( i = 0; i < N; i++ )
                         CV_Assert( (unsigned)labels[i] < (unsigned)K );
-
-                    if( _initialCenters.needed() )
-                        centers.copyTo( _initialCenters );
                 }
 
                 // compute centers
