@@ -817,7 +817,7 @@ CV_EXPORTS_W void grabCut( InputArray img, InputOutputArray mask, Rect rect,
 
 CV_EXPORTS_W void grabCut2( InputArray img, InputOutputArray mask, Rect rect,
                             InputOutputArray bgdModel, InputOutputArray fgdModel,
-                            InputOutputArray bgdModelCenters, InputOutputArray fgdModelCenters,
+                            InputOutputArray bgdCenters, InputOutputArray fgdCenters,
                             int iterCount, int mode = GC_EVAL, int centersMode = GC_CENTERS_INIT_RANDOM );
 
 enum
