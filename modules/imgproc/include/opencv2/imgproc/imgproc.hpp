@@ -806,8 +806,8 @@ enum
 
 enum
 {
-    GC_CENTERS_INIT_RANDOM      = 0,
-    GC_CENTERS_USE_INITIAL      = 1
+    GC_LABELS_INIT_RANDOM = 0,
+    GC_LABELS_USE_INITIAL = 1
 };
 
 //! segments the image using GrabCut algorithm
@@ -817,8 +817,8 @@ CV_EXPORTS_W void grabCut( InputArray img, InputOutputArray mask, Rect rect,
 
 CV_EXPORTS_W void grabCut2( InputArray img, InputOutputArray mask, Rect rect,
                             InputOutputArray bgdModel, InputOutputArray fgdModel,
-                            InputOutputArray bgdCenters, InputOutputArray fgdCenters,
-                            int iterCount, int mode = GC_EVAL, int centersMode = GC_CENTERS_INIT_RANDOM );
+                            InputOutputArray bgdLabels, InputOutputArray fgdLabels,
+                            int iterCount, int mode = GC_EVAL, int labelsMode = GC_LABELS_INIT_RANDOM );
 
 enum
 {
