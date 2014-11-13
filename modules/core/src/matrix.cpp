@@ -2688,7 +2688,8 @@ private:
 double cv::kmeans( InputArray _data, int K,
                    InputOutputArray _bestLabels,
                    TermCriteria criteria, int attempts,
-                   int flags, OutputArray _centers )
+                   int flags, OutputArray _centers,
+                   InputOutputArray _initialCenters )
 {
     const int SPP_TRIALS = 3;
     Mat data0 = _data.getMat();
@@ -2774,12 +2775,27 @@ double cv::kmeans( InputArray _data, int K,
 
             if( iter == 0 && (a > 0 || !(flags & KMEANS_USE_INITIAL_LABELS)) )
             {
-                if( flags & KMEANS_PP_CENTERS )
+                if( flags & KMEANS_USE_INITIAL_CENTERS )
+                {
+                    Mat initialCenters = _initialCenters.getMat();
+                    CV_Assert( initialCenters.rows == dims &&
+                               initialCenters.cols == K &&
+                               initialCenters.type() == type &&
+                               initialCenters.isContinuous() );
+                    initialCenters.copyTo( centers );
+                }
+                else if( flags & KMEANS_PP_CENTERS )
                     generateCentersPP(data, centers, K, rng, SPP_TRIALS);
                 else
                 {
                     for( k = 0; k < K; k++ )
                         generateRandomCenter(_box, centers.ptr<float>(k), rng);
+                }
+
+                if( !(flags & KMEANS_USE_INITIAL_CENTERS) )
+                {
+                    if ( _initialCenters.needed() )
+                        centers.copyTo( _initialCenters );
                 }
             }
             else

@@ -2581,14 +2581,16 @@ CV_EXPORTS_W int getOptimalDFTSize(int vecsize);
 */
 enum
 {
-    KMEANS_RANDOM_CENTERS=0, // Chooses random centers for k-Means initialization
-    KMEANS_PP_CENTERS=2,     // Uses k-Means++ algorithm for initialization
-    KMEANS_USE_INITIAL_LABELS=1 // Uses the user-provided labels for K-Means initialization
+    KMEANS_RANDOM_CENTERS=0,      // Chooses random centers for k-Means initialization
+    KMEANS_PP_CENTERS=2,          // Uses k-Means++ algorithm for initialization
+    KMEANS_USE_INITIAL_CENTERS=4, // Uses k-Means++ algorithm for initialization
+    KMEANS_USE_INITIAL_LABELS=1   // Uses the user-provided labels for K-Means initialization
 };
 //! clusters the input data using k-Means algorithm
 CV_EXPORTS_W double kmeans( InputArray data, int K, CV_OUT InputOutputArray bestLabels,
                             TermCriteria criteria, int attempts,
-                            int flags, OutputArray centers=noArray() );
+                            int flags, OutputArray centers=noArray(),
+                            CV_OUT InputOutputArray initialCenters=noArray() );
 
 //! returns the thread-local Random number generator
 CV_EXPORTS RNG& theRNG();
