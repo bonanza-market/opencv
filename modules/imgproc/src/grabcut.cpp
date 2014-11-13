@@ -390,10 +390,10 @@ static void initGMMs( const Mat& img, const Mat& mask, GMM& bgdGMM, GMM& fgdGMM,
     CV_Assert( !bgdSamples.empty() && !fgdSamples.empty() );
     Mat _bgdSamples( (int)bgdSamples.size(), 3, CV_32FC1, &bgdSamples[0][0] );
     kmeans( _bgdSamples, GMM::componentsCount, bgdLabels,
-            TermCriteria( CV_TERMCRIT_ITER, kMeansItCount, 0.0), 0, kMeansType, _bgdInitialCenters );
+            TermCriteria( CV_TERMCRIT_ITER, kMeansItCount, 0.0), 0, kMeansType, noArray(), _bgdInitialCenters );
     Mat _fgdSamples( (int)fgdSamples.size(), 3, CV_32FC1, &fgdSamples[0][0] );
     kmeans( _fgdSamples, GMM::componentsCount, fgdLabels,
-            TermCriteria( CV_TERMCRIT_ITER, kMeansItCount, 0.0), 0, kMeansType, _fgdInitialCenters );
+            TermCriteria( CV_TERMCRIT_ITER, kMeansItCount, 0.0), 0, kMeansType, noArray(), _fgdInitialCenters );
 
     if( !useInitialLabels )
     {

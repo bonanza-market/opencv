@@ -2777,9 +2777,11 @@ double cv::kmeans( InputArray _data, int K,
             {
                 if( flags & KMEANS_USE_INITIAL_CENTERS )
                 {
+                    CV_Assert( !_initialCenters.empty() );
                     Mat initialCenters = _initialCenters.getMat();
-                    CV_Assert( initialCenters.rows == dims &&
-                               initialCenters.cols == K &&
+
+                    CV_Assert( initialCenters.rows == K &&
+                               initialCenters.cols == dims &&
                                initialCenters.type() == type &&
                                initialCenters.isContinuous() );
                     initialCenters.copyTo( centers );
