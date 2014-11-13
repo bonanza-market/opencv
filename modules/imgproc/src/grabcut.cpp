@@ -358,14 +358,22 @@ static void initMaskWithRect( Mat& mask, Size imgSize, Rect rect )
 /*
   Initialize GMM background and foreground models using kmeans algorithm.
 */
-static void initGMMs( const Mat& img, const Mat& mask, GMM& bgdGMM, GMM& fgdGMM, bool useInitialLabels,
-                      InputOutputArray _bgdInitialLabels, InputOutputArray _fgdInitialLabels )
+static void initGMMs( const Mat& img, const Mat& mask, GMM& bgdGMM, GMM& fgdGMM,
+                      bool useInitialLabels, InputOutputArray _bgdInitialLabels, InputOutputArray _fgdInitialLabels,
+                      bool useInitialCenters, InputOutputArray _bgdInitialCenters, InputOutputArray _fgdInitialCenters )
 {
     const int kMeansItCount = 10;
     int kMeansType = KMEANS_PP_CENTERS;
 
-    Mat bgdLabels, fgdLabels;
+    InputOutputArray bgdCenters = noArray(), fgdCenters = noArray();
+    if( useInitialCenters )
+    {
+        kMeansType = KMEANS_USE_INITIAL_CENTERS;
+        _bgdInitialCenters.getMatRef().copyTo( bgdCenters );
+        _fgdInitialCenters.getMatRef().copyTo( fgdCenters );
+    }
 
+    Mat bgdLabels, fgdLabels;
     if( useInitialLabels )
     {
         kMeansType = kMeansType | KMEANS_USE_INITIAL_LABELS;
@@ -388,15 +396,27 @@ static void initGMMs( const Mat& img, const Mat& mask, GMM& bgdGMM, GMM& fgdGMM,
     CV_Assert( !bgdSamples.empty() && !fgdSamples.empty() );
     Mat _bgdSamples( (int)bgdSamples.size(), 3, CV_32FC1, &bgdSamples[0][0] );
     kmeans( _bgdSamples, GMM::componentsCount, bgdLabels,
-            TermCriteria( CV_TERMCRIT_ITER, kMeansItCount, 0.0), 0, kMeansType );
+            TermCriteria( CV_TERMCRIT_ITER, kMeansItCount, 0.0), 0, kMeansType, bgdCenters );
     Mat _fgdSamples( (int)fgdSamples.size(), 3, CV_32FC1, &fgdSamples[0][0] );
     kmeans( _fgdSamples, GMM::componentsCount, fgdLabels,
-            TermCriteria( CV_TERMCRIT_ITER, kMeansItCount, 0.0), 0, kMeansType );
+            TermCriteria( CV_TERMCRIT_ITER, kMeansItCount, 0.0), 0, kMeansType, fgdCenters );
+
+    if( !useInitialCenters )
+    {
+        if( _bgdInitialCenters.needed() )
+            bgdCenters.getMatRef().copyTo( _bgdInitialCenters );
+
+        if( _fgdInitialCenters.needed() )
+            fgdCenters.getMatRef().copyTo( _fgdInitialCenters );
+    }
 
     if( !useInitialLabels )
     {
-        bgdLabels.copyTo( _bgdInitialLabels.getMatRef() );
-        fgdLabels.copyTo( _fgdInitialLabels.getMatRef() );
+        if( _bgdInitialLabels.needed() )
+            bgdLabels.copyTo( _bgdInitialLabels.getMatRef() );
+
+        if( _fgdInitialLabels.needed() )
+            fgdLabels.copyTo( _fgdInitialLabels.getMatRef() );
     }
 
     bgdGMM.initLearning();
@@ -544,13 +564,14 @@ void cv::grabCut( InputArray _img, InputOutputArray _mask, Rect rect,
                   InputOutputArray _bgdModel, InputOutputArray _fgdModel,
                   int iterCount, int mode )
 {
-    cv::grabCut2( _img, _mask, rect, _bgdModel, _fgdModel, noArray(), noArray(), iterCount, mode );
+    cv::grabCut2( _img, _mask, rect, _bgdModel, _fgdModel, noArray(), noArray(), noArray(), noArray(), iterCount, mode );
 }
 
 void cv::grabCut2( InputArray _img, InputOutputArray _mask, Rect rect,
                    InputOutputArray _bgdModel, InputOutputArray _fgdModel,
                    InputOutputArray _bgdLabels, InputOutputArray _fgdLabels,
-                   int iterCount, int mode, int labelsMode )
+                   InputOutputArray _bgdCenters, InputOutputArray _fgdCenters,
+                   int iterCount, int mode, int labelsMode, int centersMode )
 {
     Mat img = _img.getMat();
     Mat& mask = _mask.getMatRef();
@@ -572,7 +593,9 @@ void cv::grabCut2( InputArray _img, InputOutputArray _mask, Rect rect,
         else // flag == GC_INIT_WITH_MASK
             checkMask( img, mask );
 
-        initGMMs( img, mask, bgdGMM, fgdGMM, labelsMode == GC_LABELS_USE_INITIAL, _bgdLabels, _fgdLabels );
+        initGMMs( img, mask, bgdGMM, fgdGMM,
+                  labelsMode == GC_LABELS_USE_INITIAL, _bgdLabels, _fgdLabels,
+                  centersMode == GC_CENTERS_MODE_USE_INITIAL, _bgdCenters, _fgdCenters );
     }
 
     if( iterCount <= 0)
